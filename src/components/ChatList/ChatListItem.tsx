@@ -10,21 +10,22 @@ type Props = {
 export const ChatListItem = ({ onClick, active, data }: Props) => {
     return (
         <div className={`chatListItem hover:bg-muted ${active ? 'bg-muted' : 'bg-card'}`} onClick={onClick}>
-            <img src={data.image} alt="" className="chatListItem--avatar" />
+            <img src={data.image || data.avatar} alt="" className="chatListItem--avatar" />
             <div className="chatListItem--lines">
                 <div className="chatListItem--line">
-                    <div className="chatListItem--name">{data.title}</div>
+                    <div className="chatListItem--name">{data.title || data.name}</div>
                     <div className="chatListItem--date">
-                        16:00
+                        {data.lastMessageDate}
                     </div>
                 </div>
                 <div className="chatListItem--line">
                     <div className="chatListItem--lastMsg">
                         <p>
-                            {data.lastMsg}
+                            {data.lastMessage}
                         </p>
                     </div>
                 </div>
+
             </div>
         </div>
     )

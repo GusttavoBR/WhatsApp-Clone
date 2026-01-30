@@ -32,35 +32,8 @@ export const ChatWindown = ({ user, data }: { user: Usuario, data: Chat }) => {
     const [showEmoji, setShowEmoji] = useState<boolean | null>(false)
     const [text, setText] = useState('')
     const body = useRef<HTMLDivElement>(null)
-    const [list, setList] = useState<Message[]>([
-        { id: "1", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "2", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "3", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "4", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "5", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "6", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "7", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "8", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "9", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "10", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "11", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "12", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "13", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "14", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "15", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "16", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "17", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "18", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "19", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "20", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "21", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "22", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "23", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "24", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-        { id: "25", author: "123", body: 'Olá! Como você está?', date: '19:00' },
-        { id: "26", author: "1", body: 'Estou bem, obrigado! E você?', date: '19:01' },
-        { id: "27", author: "123", body: 'Também estou bem! Vamos marcar algo?', date: '19:02' },
-    ])
+    const [list, setList] = useState<Message[]>([])
+
 
     useEffect(() => {
         if (body.current && body.current.scrollHeight > body.current.offsetHeight) {

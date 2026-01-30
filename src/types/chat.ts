@@ -3,4 +3,7 @@ export type Chat = {
     title: string;
     image: string;
     with: string;
+    lastMessage?: string;
+    lastMessageDate?: any;
 }
+

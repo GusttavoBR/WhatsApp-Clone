@@ -43,7 +43,7 @@ export default {
                 avatar: u.avatar
             }, { merge: true })
 
-            console.log('Usuário slavo no banco de dados!')
+            console.log('Usuário salvo no banco de dados!')
         } catch (error) {
             console.error("Erro ao salvar usuário: ", error)
         }
@@ -90,7 +90,10 @@ export default {
                     chatId: chatRef.id,
                     title: user2.name || 'Usuário',
                     image: user2.avatar || '',
-                    with: user2.id
+                    with: user2.id,
+                    lastMessage: '',
+                    lastMessageDate: ''
+
                 })
 
             });
@@ -101,7 +104,10 @@ export default {
                     chatId: chatRef.id,
                     title: user.name,
                     image: user.avatar,
-                    with: user.id
+                    with: user.id,
+                    lastMessage: '',
+                    lastMessageDate: ''
+
                 })
             });
 
@@ -119,9 +125,22 @@ export default {
             if (doc.exists()) {
                 let data = doc.data()
                 if (data.chats) {
-                    setChatList(data.chats)
+                    // Deduplica por contato (campo 'with') para limpar a interface
+                    let uniqueChats: any[] = []
+                    let chatIds = new Set()
+
+                    for (let chat of data.chats) {
+                        if (!chatIds.has(chat.with)) {
+                            chatIds.add(chat.with)
+                            uniqueChats.push(chat)
+                        }
+                    }
+
+                    setChatList(uniqueChats)
                 }
             }
         })
+
+
     }
 }
