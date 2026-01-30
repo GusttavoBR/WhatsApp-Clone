@@ -1,0 +1,8 @@
+.newChat--list::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.newChat--list::-webkit-scrollbar-thumb {
+    background-color: var(--muted);
+}

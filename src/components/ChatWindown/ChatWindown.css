@@ -1,0 +1,32 @@
+.chatWindow--btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all ease 0.3s;
+}
+
+.send-button {
+    background-color: #22c55e;
+    border-radius: 50%;
+    padding: 2px;
+    fill: black;
+    color: black;
+    scale: 1.3;
+}
+
+.send-button:hover {
+    transform: scale(1.1);
+}
+
+.chatWindow--body::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.chatWindow--body::-webkit-scrollbar-thumb {
+    background-color: var(--muted);
+}
