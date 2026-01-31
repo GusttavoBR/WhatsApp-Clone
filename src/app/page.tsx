@@ -41,18 +41,29 @@ export default function Home() {
         const u = uc.user;
         const additionalInfo = getAdditionalUserInfo(uc);
 
-        // Tenta pegar a URL da foto do profile retornado pelo Facebook
-        const profilePhoto = (additionalInfo?.profile as any)?.picture?.data?.url;
-        const photoURL = profilePhoto || u.photoURL;
+        // Tenta pegar a URL da foto de forma robusta
+        let photoURL = u.photoURL;
+
+        if (additionalInfo?.providerId === 'facebook.com') {
+            const profilePhoto = (additionalInfo?.profile as any)?.picture?.data?.url;
+            if (profilePhoto) photoURL = profilePhoto;
+        }
+
+        if (!photoURL) {
+            photoURL = "https://www.w3schools.com/howto/img_avatar.png";
+        }
+
+        console.log("Login via:", additionalInfo?.providerId, "URL da foto:", photoURL);
 
         let newUser: Usuario = {
             id: u.uid,
-            name: u.displayName,
+            name: u.displayName || 'Usuário',
             avatar: photoURL
         };
         await Api.addUser(newUser)
         setUser(newUser)
     }
+
 
     if (user === null) {
         return (<Login onReceive={handleLoginData} />)
@@ -71,7 +82,8 @@ export default function Home() {
                     chatlist={chatlist}
                 />
                 <header>
-                    <img className='header--avatar' src={user.avatar ?? "https://www.w3schools.com/howto/img_avatar.png"} alt='' />
+                    <img className='header--avatar' src={user.avatar ?? "https://www.w3schools.com/howto/img_avatar.png"} alt='' referrerPolicy="no-referrer" />
+
                     <div className="header--buttons">
                         <div className='header--btn'>
                             <DonutLargeIcon className='text-muted-foreground' />

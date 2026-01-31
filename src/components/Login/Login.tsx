@@ -17,11 +17,24 @@ export const Login = ({ onReceive }: Props) => {
         }
     }
 
+    const handleGoogleLogin = async () => {
+        let { result, error } = await Api.googlePopup()
+        if (result) {
+            onReceive(result)
+        } else {
+            alert(`Erro: ${error?.code || 'Desconhecido'}`)
+        }
+    }
+
     return (
-        <div onClick={handleFacebookLogin} className="flex items-center justify-center h-screen ">
-            <Button className="text-2xl p-4 cursor-pointer">
+        <div className="flex flex-col items-center justify-center h-screen gap-4">
+            <Button onClick={handleFacebookLogin} className="text-xl p-6 cursor-pointer w-64 bg-[#1877F2] hover:bg-[#166fe5]">
                 Logar com Facebook
+            </Button>
+            <Button onClick={handleGoogleLogin} className="text-xl p-6 cursor-pointer w-64 bg-[#db4437] hover:bg-[#c5392d]">
+                Logar com Google
             </Button>
         </div>
     )
+
 }

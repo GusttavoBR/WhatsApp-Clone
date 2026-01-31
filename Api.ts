@@ -1,9 +1,9 @@
 import { initializeApp } from 'firebase/app';
-import { addDoc, arrayUnion, collection, doc, getDocs, getFirestore, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
-import { getAuth, FacebookAuthProvider, signInWithPopup } from 'firebase/auth';
+import { addDoc, arrayUnion, collection, doc, getDoc, getDocs, getFirestore, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import { getAuth, FacebookAuthProvider, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+
 import { Usuario } from './src/components/ChatWindown/ChatWindown';
 import { Chat } from './src/types/chat';
-
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,9 +18,6 @@ const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
 
-
-
-
 export default {
     fbPopup: async () => {
         const provider = new FacebookAuthProvider();
@@ -34,25 +31,33 @@ export default {
         }
     },
 
-    addUser: async (u: any) => {
+    googlePopup: async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+            let result = await signInWithPopup(auth, provider);
+            return { result };
+        } catch (error: any) {
+            console.error("Google Login Error:", error);
+            return { error };
+        }
+    },
+
+
+    addUser: async (u: Usuario) => {
         try {
             const userRef = doc(db, 'users', u.id);
-
             await setDoc(userRef, {
                 name: u.name,
                 avatar: u.avatar
             }, { merge: true })
-
-            console.log('Usuário salvo no banco de dados!')
         } catch (error) {
             console.error("Erro ao salvar usuário: ", error)
         }
     },
 
-    getContactList: async (userId: any) => {
+    getContactList: async (userId: string) => {
         try {
             let list: any[] = []
-
             const querySnapshot = await getDocs(collection(db, 'users'));
             querySnapshot.forEach(doc => {
                 let data = doc.data()
@@ -64,54 +69,45 @@ export default {
                     })
                 }
             })
-
             return list;
         } catch (error) {
-            console.log('ERROR' + error)
+            console.error("Erro ao pegar lista de contatos:", error);
             return [];
         }
     },
 
-    addNewChat: async (user: any, user2: any) => {
+    addNewChat: async (user: Usuario, user2: any) => {
         try {
-            // 1. Criar o chat e obter a referência já gravada (Equivalente ao .add() da imagem)
             const chatRef = await addDoc(collection(db, 'chats'), {
                 messages: [],
                 users: [user.id, user2.id],
             });
 
-            // 2. Referências dos usuários
             const userRef = doc(db, 'users', user.id);
             const user2Ref = doc(db, 'users', user2.id);
 
-            // 3. Atualizar User 1 (adiciona o User 2 na lista de chats dele)
-            await updateDoc(userRef, {
-                chats: arrayUnion({
-                    chatId: chatRef.id,
-                    title: user2.name || 'Usuário',
-                    image: user2.avatar || '',
-                    with: user2.id,
-                    lastMessage: '',
-                    lastMessageDate: ''
+            const chatData1 = {
+                chatId: chatRef.id,
+                title: user2.name || 'Usuário',
+                image: user2.avatar || '',
+                with: user2.id,
+                lastMessage: '',
+                lastMessageDate: '',
+                users: [user.id, user2.id]
+            };
 
-                })
+            const chatData2 = {
+                chatId: chatRef.id,
+                title: user.name,
+                image: user.avatar,
+                with: user.id,
+                lastMessage: '',
+                lastMessageDate: '',
+                users: [user.id, user2.id]
+            };
 
-            });
-
-            // 4. Atualizar User 2 (adiciona o User 1 na lista de chats dele)
-            await updateDoc(user2Ref, {
-                chats: arrayUnion({
-                    chatId: chatRef.id,
-                    title: user.name,
-                    image: user.avatar,
-                    with: user.id,
-                    lastMessage: '',
-                    lastMessageDate: ''
-
-                })
-            });
-
-            console.log("Novo chat criado com sucesso!");
+            await updateDoc(userRef, { chats: arrayUnion(chatData1) });
+            await updateDoc(user2Ref, { chats: arrayUnion(chatData2) });
 
         } catch (error) {
             console.error("Erro ao criar chat:", error);
@@ -119,28 +115,86 @@ export default {
     },
 
     onChatList: (userId: string, setChatList: Function) => {
-        const docRef = doc(db, "users", userId)
-
-        return onSnapshot(docRef, (doc) => {
+        return onSnapshot(doc(db, "users", userId), (doc) => {
             if (doc.exists()) {
-                let data = doc.data()
+                let data = doc.data();
                 if (data.chats) {
-                    // Deduplica por contato (campo 'with') para limpar a interface
-                    let uniqueChats: any[] = []
-                    let chatIds = new Set()
-
+                    let uniqueChats: any[] = [];
+                    let chatIds = new Set();
                     for (let chat of data.chats) {
                         if (!chatIds.has(chat.with)) {
-                            chatIds.add(chat.with)
-                            uniqueChats.push(chat)
+                            chatIds.add(chat.with);
+                            uniqueChats.push(chat);
+                        }
+                    }
+                    let chats = [...uniqueChats]
+                    chats.sort((a, b) => {
+                        if (a.lastMessageDate === undefined || a.lastMessageDate === '') {
+                            return 1;
+                        }
+                        if (b.lastMessageDate === undefined || b.lastMessageDate === '') {
+                            return -1;
+                        }
+
+                        let aTime = a.lastMessageDate.seconds ? a.lastMessageDate.seconds : new Date(a.lastMessageDate).getTime() / 1000;
+                        let bTime = b.lastMessageDate.seconds ? b.lastMessageDate.seconds : new Date(b.lastMessageDate).getTime() / 1000;
+
+                        return bTime - aTime;
+                    });
+
+                    setChatList(chats);
+                }
+            }
+        });
+    },
+
+    onChatContent: (chatId: string, setList: Function) => {
+        return onSnapshot(doc(db, 'chats', chatId), (doc) => {
+            if (doc.exists()) {
+                let data = doc.data();
+                if (data.messages) {
+                    setList(data.messages);
+                }
+            }
+        });
+    },
+
+    sendMessage: async (chatData: Chat, userId: string, type: string, body: string) => {
+        try {
+            const now = new Date();
+            const chatRef = doc(db, 'chats', chatData.chatId);
+
+            await updateDoc(chatRef, {
+                messages: arrayUnion({
+                    type,
+                    author: userId,
+                    body,
+                    date: now
+                })
+            });
+
+            const usersToUpdate = chatData.users || [userId, chatData.with];
+
+            for (let uId of usersToUpdate) {
+                const uRef = doc(db, 'users', uId);
+                const uDoc = await getDoc(uRef);
+
+                if (uDoc.exists()) {
+                    let data = uDoc.data();
+                    let chats = data.chats ? [...data.chats] : [];
+
+                    for (let i in chats) {
+                        if (chats[i].chatId === chatData.chatId) {
+                            chats[i].lastMessage = body;
+                            chats[i].lastMessageDate = now;
                         }
                     }
 
-                    setChatList(uniqueChats)
+                    await updateDoc(uRef, { chats });
                 }
             }
-        })
-
-
+        } catch (error) {
+            console.error("Erro ao enviar mensagem:", error);
+        }
     }
 }

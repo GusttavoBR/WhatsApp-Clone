@@ -5,5 +5,7 @@ export type Chat = {
     with: string;
     lastMessage?: string;
     lastMessageDate?: any;
+    users?: string[];
 }
+
 

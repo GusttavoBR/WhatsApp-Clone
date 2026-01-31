@@ -57,7 +57,8 @@ export const NewChat = ({ show, setShow, user, chatlist }: Props) => {
             <div className="newChat--list flex-1 overflow-y-auto">
                 {list.map((item, key) => (
                     <div onClick={() => addNewChat({ user2: item })} className="flex items-center p-3.5 cursor-pointer hover:bg-gray-500/20" key={key}>
-                        <img src={item.avatar ?? ""} alt="" className="w-12 h-12 rounded-full mr-3.5" />
+                        <img src={item.avatar ?? ""} alt="" className="w-12 h-12 rounded-full mr-3.5" referrerPolicy="no-referrer" />
+
                         <div className="text-xl">
                             {item.name}
                         </div>

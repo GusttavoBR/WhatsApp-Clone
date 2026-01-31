@@ -9,6 +9,7 @@ import SendIcon from '@mui/icons-material/Send';
 import EmojiPicker, { Theme, EmojiClickData } from 'emoji-picker-react'
 import { MessageList } from '../MessageList/MessageList';
 import { Chat } from '@/src/types/chat';
+import Api from '@/Api';
 
 
 export interface Message {
@@ -36,10 +37,17 @@ export const ChatWindown = ({ user, data }: { user: Usuario, data: Chat }) => {
 
 
     useEffect(() => {
+        setList([]);
+        let unsub = Api.onChatContent(data.chatId, setList);
+        return unsub;
+    }, [data.chatId]);
+
+    useEffect(() => {
         if (body.current && body.current.scrollHeight > body.current.offsetHeight) {
             body.current.scrollTop = body.current.scrollHeight - body.current.offsetHeight;
         }
     }, [list])
+
 
     const recognitionRef = useRef<any>(null)
 
@@ -85,15 +93,30 @@ export const ChatWindown = ({ user, data }: { user: Usuario, data: Chat }) => {
     }
 
     const handleSendClick = () => {
-
+        if (text !== '') {
+            Api.sendMessage(data, user.id, 'text', text)
+            setText('')
+            setShowEmoji(false)
+        }
     }
+
+    const handleInputKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleSendClick();
+        }
+    }
+
+
+
 
     return (
         <div className='chatWindow flex flex-col h-full overflow-hidden relative'>
             <div className="chatWindow--header h-16 border-b border-gray-300/30 flex justify-between items-center">
 
                 <div className="chatWindow--headerInfo flex items-center cursor-pointer">
-                    <img className='chatWindow--avatar w-10 h-10 rounded-full ml-4 mr-4' src={data.image || "https://www.w3schools.com/howto/img_avatar.png"} alt="" />
+                    <img className='chatWindow--avatar w-10 h-10 rounded-full ml-4 mr-4' src={data.image || "https://www.w3schools.com/howto/img_avatar.png"} alt="" referrerPolicy="no-referrer" />
+
                     <div className="chatWindow--name text-lg" > {data.title}</div >
                 </div >
 
@@ -153,9 +176,12 @@ export const ChatWindown = ({ user, data }: { user: Usuario, data: Chat }) => {
                             type="text"
                             value={text}
                             onChange={(e) => setText(e.target.value)}
+                            onKeyDown={handleInputKeyDown}
                             className='chatWindow--input bg-secondary w-full text-md rounded-full pl-4 focus:outline-none'
+
                             placeholder='Digite uma mensagem'
                         />
+
                     </div>
 
                     <div className='chatWindow--pos flex mr-2 items-center '>
